@@ -18,6 +18,10 @@
   ],
   "license": "MIT",
   "author": "iasiv5",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iasiv5/dsh-surf"
+  },
   "publishConfig": {
     "access": "public"
   },

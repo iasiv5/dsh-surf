@@ -48,8 +48,10 @@ jobs:
           esac
           pkg_version=$(node -p "require('./package.json').version")
           pkg_name=$(node -p "require('./package.json').name")
+          repo_url=$(node -p "require('./package.json').repository?.url || ''")
           test "$pkg_name" = '@iasiv5/dsh-surf'
           test "$pkg_version" = "$version"
+          test "$repo_url" = 'https://github.com/iasiv5/dsh-surf'
           echo "Publishing $pkg_name@$pkg_version from $ref"
 
       - name: Run client regression test
