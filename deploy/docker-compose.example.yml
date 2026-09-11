@@ -1,0 +1,34 @@
+# dsh-surf example deployment: build the image and run the surface on one host.
+# Host-specific values are marked with <...> — instantiate them before `up`.
+services:
+  surf:
+    container_name: dsh-surf
+    image: dsh-surf:0.1.0
+    build: .
+    environment:
+      - PUID=1000                  # <your uid>: instantiate with `id -u`
+      - PGID=1000                  # <your gid>: instantiate with `id -g`
+      - TZ=<Your-IANA-Timezone>    # e.g. Asia/Shanghai
+      - LC_ALL=zh_CN.UTF-8
+      - PIXELFLUX_WAYLAND=false    # force X11 mode — required for fcitx5 (ADR-0003)
+      - SUBFOLDER=/surf/
+      - TITLE=Surf
+      - CHROME_CLI=--lang=zh-CN
+      # Traffic guardrails: single-value locks (no user-facing rate/resolution sliders)
+      - SELKIES_FRAMERATE=30
+      - SELKIES_H264_CRF=23
+      - SELKIES_MANUAL_WIDTH=1920
+      - SELKIES_MANUAL_HEIGHT=1080
+      - SELKIES_IS_MANUAL_RESOLUTION_MODE=true
+      - SELKIES_AUDIO_BITRATE=160000
+      # Security booleans: `|locked` value syntax keeps them off and greyed out in the UI
+      - SELKIES_ENABLE_SHARING=false|locked
+      - SELKIES_MICROPHONE_ENABLED=false|locked
+      - DISABLE_TERMINALS=true
+      - DISABLE_SUDO=true
+    ports:
+      - "127.0.0.1:3000:3000"      # loopback only — put a TLS proxy in front
+    volumes:
+      - ./config:/config
+    shm_size: "1gb"
+    restart: unless-stopped
