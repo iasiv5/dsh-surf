@@ -129,8 +129,8 @@ EOF`
 - [ ] Step 3: 复跑 Step 1 测试
 - Expected: `CLIENT-FACTORY-OK`
 - [ ] Step 4: 依赖审查（命中即失败）+ 审计
-- Run: `cd ~/workspace/dsh-surf && if grep -qnE "betterSidebar|ego-browser|ego_browser" lib/ package.json; then echo FORBIDDEN-DEP; exit 1; fi && ~/workspace/01_docs/audit-scripts/dsh-surf-secret-scan.sh .`
-- Expected: `SECRET-SCAN-CLEAN`（无 FORBIDDEN-DEP）
+- Run: `cd ~/workspace/dsh-surf && if grep -rqnE "betterSidebar|ego-browser|ego_browser" lib/ package.json; then echo FORBIDDEN-DEP; exit 1; fi && ~/workspace/01_docs/audit-scripts/dsh-surf-secret-scan.sh .`
+- Expected: `SECRET-SCAN-CLEAN`（无 FORBIDDEN-DEP；2026-09-10 修订：原 `grep -qnE` 对目录参数 `lib/` 无 `-r` 时不递归且报错跳过，依赖审查实际未覆盖 lib/ 下文件，改用 `grep -rqnE` 全覆盖；修订经用户确认）
 - [ ] Step 5: checkpoint commit
 - Run: `cd ~/workspace/dsh-surf && git add -A && git commit -m "feat(client): shell.overlay thin launcher with basePath support"`
 
