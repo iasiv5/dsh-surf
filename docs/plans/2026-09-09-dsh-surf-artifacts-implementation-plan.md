@@ -10,8 +10,8 @@
 
 ## 架构快照
 
-- **npm 插件包 `@iasiv5/dsh-surf`**：宿主半身 `lib/index.js`（最小 apply）；客户端半身 `lib/client.js`（`window.__ModuleLoader__.load` 工厂，`inject:['slots']` 硬依赖，`shell.overlay` 槽位「Surf」主按钮 + ⚙ 设置按钮 → `window.open` 打开 `<origin>[basePath]/surf/`）。零 peerDependencies，不代理流量。
-- **`deploy/` 镜像源码**：`Dockerfile` 基于固定 tag `lscr.io/linuxserver/chrome`；**强制 X11 模式**（`PIXELFLUX_WAYLAND=false`，见 ADR-0003，已获用户批准）；fcitx5 会话自启采用**确定性整文件 autostart**：`deploy/autostart` 同时包含基座 Chrome 启动行（`wrapped-chrome ${CHROME_CLI}`，已对固定 tag 官方文件核实）与 `fcitx5 -d &`，`COPY --chmod=0755` 覆盖 `/defaults/autostart`——**双向职责缺一不可**；compose 官方变量名参数化，安全布尔用 `|locked` 值语法强制关闭。
+- **npm 插件包 `@iasiv5/dsh-surf`**：宿主半身 `lib/index.js`（注册 `dsh-surf` Settings namespace）；客户端半身 `lib/client.js`（`window.__ModuleLoader__.load` 工厂，`inject:['slots']` 硬依赖，`settings.plugin.item` 卡片含 basePath 与「打开 Surf」按钮，主页面不再有浮层）。零 peerDependencies，不代理流量。
+- **`deploy/` 镜像源码**：`Dockerfile` 基于固定 tag `lscr.io/linuxserver/chrome`；**强制 X11 模式**（`PIXELFLUX_WAYLAND=false`，见 ADR-0003，已获用户批准）；确定性整文件 autostart 仅保留基座 Chrome 启动行（`wrapped-chrome ${CHROME_CLI}`，已对固定 tag 官方文件核实），本地设备 IME 经 Selkies 文本注入，容器内不装 IME；compose 官方变量名参数化，安全布尔用 `|locked` 值语法强制关闭。
 - 前缀挂载入口：客户端 localStorage `basePath` 手动适配（默认根挂载）；已知限制写入 README。
 - 流量护栏：帧率/CRF/分辨率单值锁定 + 云平台告警（官方无严格视频码率帽变量，硬帽为开放决策）。
 - 安全加固：`DISABLE_TERMINALS=true`、`DISABLE_SUDO=true`；分享/麦克风 `false|locked`；文件传输保留。
@@ -44,7 +44,7 @@
 
 - 涉及文件：`.gitignore`、`LICENSE`、`package.json`、`cordis.patch.yml`、`lib/index.js`
 - 接口契约
-  - Produces: 仓库（分支 main）；`package.json`（`name @iasiv5/dsh-surf` / `version 0.1.0` / `type module` / `main lib/index.js` / `exports {".","./client","./package.json"}` / `dsh.bundle.patch=./cordis.patch.yml` / `dsh.client={platform web, inject [@deepseek-ai/dsh-client-ui-layout]}` / `files=[lib/, cordis.patch.yml, README.md, LICENSE, deploy/]`）；`lib/index.js` 导出 `name='dsh-surf'`、`inject=[]`、`apply(ctx)`
+  - Produces: 仓库（分支 main）；`package.json`（`name @iasiv5/dsh-surf` / `version 0.1.0` / `type module` / `main lib/index.js` / `exports {".","./client","./package.json"}` / `dsh.bundle.patch=./cordis.patch.yml` / `dsh.client={platform web, inject [@deepseek-ai/dsh-client-ui-layout]}` / `files=[lib/, cordis.patch.yml, README.md, LICENSE, deploy/]`）；`lib/index.js` 导出 `name='@iasiv5/dsh-surf'`、`inject=[]`、`apply(ctx)` 注册 `dsh-surf` settings namespace
 - 验证范围：审计脚本就位、toplevel 断言、ESM 语法、pack 集合相等（当时存在的文件）
 
 - [ ] Step 1: 审计器与自测就位检查（自测不过 = 审计器不可信）
@@ -54,7 +54,7 @@
 - Run: `cd ~/workspace/dsh-surf && git init -b main && [ "$(git rev-parse --show-toplevel)" = "$HOME/workspace/dsh-surf" ] && git symbolic-ref --short HEAD | grep -qx main && echo REPO-OK`
 - Expected: `REPO-OK`（2026-09-10 修订：原 `git rev-parse --abbrev-ref HEAD` 在零提交新生仓库上 fatal（git 2.43 实测 rc=128），换用 `git symbolic-ref --short HEAD`——读 HEAD 符号引用、不依赖 commit 存在，语义等价断言当前分支为 main；修订经用户确认）
 - [ ] Step 3: 创建骨架文件（含 package.json 全部字段）
-- Change: `.gitignore`（node_modules/、config/）；`LICENSE`（MIT，`Copyright (c) 2026 iasiv5`）；`cordis.patch.yml`（`- insert: [{id: surf, name: "@iasiv5/dsh-surf"}]`）；`package.json`（按 Produces 契约写入全部字段）；`lib/index.js`（`export const name='dsh-surf'; export const inject=[]; export function apply(ctx){ ctx?.logger?.info?.('dsh-surf host loaded (thin launcher)') }`）
+- Change: `.gitignore`（node_modules/、config/）；`LICENSE`（MIT，`Copyright (c) 2026 iasiv5`）；`cordis.patch.yml`（`- insert: [{id: surf, name: "@iasiv5/dsh-surf"}]`）；`package.json`（按 Produces 契约写入全部字段）；`lib/index.js`（scoped `name='@iasiv5/dsh-surf'`、`inject=[]`、`apply(ctx)` 注册 `dsh-surf` settings namespace）
 - [ ] Step 4: 语法 + 审计（pre-commit，历史面自动跳过）+ pack 集合相等
 - Run: `cd ~/workspace/dsh-surf && node --input-type=module --check < lib/index.js && ~/workspace/01_docs/audit-scripts/dsh-surf-secret-scan.sh . && npm pack --dry-run --json 2>/dev/null | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const j=JSON.parse(s);const got=(j[0]||j).files.map(x=>x.path).sort();const want=['LICENSE','cordis.patch.yml','lib/index.js','package.json'];if(JSON.stringify(got)!==JSON.stringify(want)){console.log('GOT:',got);process.exit(1)}console.log('PACK-EXACT')})"`
 - Expected: 语法通过；`SECRET-SCAN-CLEAN`（此时无 commit，脚本输出历史为空 NOTE 属预期；**本步禁止 --require-history**）；`PACK-EXACT`（README 未创建故不在清单）
@@ -62,77 +62,26 @@
 - Run: `cd ~/workspace/dsh-surf && git add -A && git commit -m "scaffold: npm package skeleton" && ~/workspace/01_docs/audit-scripts/dsh-surf-secret-scan.sh . --require-history`
 - Expected: commit 成功且历史审计 `SECRET-SCAN-CLEAN`（自首个 commit 起历史面纳入门禁）
 
-### Task 2: 客户端薄入口（TDD，测试可被正确实现通过）
+### Task 2: Settings 内薄入口（TDD，测试可被正确实现通过）
 
 - 涉及文件：`lib/client.js`
 - 接口契约
-  - Produces: 模块 `{ name:'dsh-surf/client', inject:['slots'], apply, resolveSurfUrl, openSurf }`；**工厂注册 id 必须等于 package.json `name`**（dsh-client-modules 按包名作为 graph row id 校验注册 id，不一致即 "loaded without registering" 整包失败——2026-09-11 实测修订，经用户确认）；`resolveSurfUrl(basePath, origin)` 斜杠归一；`openSurf(basePath, origin=globalThis.location?.origin)`——origin 为空时 **throw**；打开一律经 **`window.open(url,'_blank','noopener')`**；localStorage 键精确为 `dsh-surf:basePath`；槽位 `{name:'shell.overlay', id:'dsh-surf:entry', order:130, label:'Surf 入口'}`；SurfButton vnode 树 = 定位容器（`style.position:'fixed'`）+ **两个按钮**：主按钮 `props['data-surf']='main'`（`style.pointerEvents:'auto'`，onClick → `openSurf(...)`）、设置按钮 `props['data-surf']='settings'`（onClick → `window.prompt`，非 null 才写回 localStorage 精确键）
-- 验证范围：loader stub 全断言（注入回调被执行且次数、descriptor 四字段、双按钮 vnode 树遍历、点击行为、prompt 取消不写入、无 origin 抛错）
+  - Produces: 模块 `{ name:'dsh-surf/client', inject:['slots'], apply, resolveSurfUrl, openSurf }`；**工厂注册 id 必须等于 package.json `name`**（dsh-client-modules 按包名作为 graph row id 校验注册 id，不一致即 "loaded without registering" 整包失败）；`apply(ctx)` 注入 `settings.plugin.item`，descriptor 的 `id/key` 均为 `dsh-surf`，Settings 卡片包含 basePath 输入框与「打开 Surf」按钮；不再注入 `shell.overlay`，不再渲染主页面浮层或齿轮按钮；`resolveSurfUrl(basePath, origin)` 斜杠归一；`openSurf(basePath, origin=globalThis.location?.origin)`——origin 为空时 **throw**；打开一律经 **`window.open(url,'_blank','noopener')`**；localStorage 键精确为 `dsh-surf:basePath`；宿主 half 注册 `dsh-surf` settings namespace（2026-09-11 功能变更）
+- 验证范围：loader stub 全断言（注册 id 与 package name、settings.plugin.item descriptor 的 id/key、无 shell.overlay、Settings 卡片 input/basePath 持久化、打开行为、URL resolver、无 origin 抛错、宿主 settings namespace）。
 
 - [ ] Step 1: 写失败测试
-- Run: `cd ~/workspace/dsh-surf && node --input-type=module - <<'EOF'
-let stored = '/pre'
-globalThis.window = {
-  __ModuleLoader__: { load: (s) => { globalThis.__spec = s } },
-  open: (u, f, t) => { opened = [u, f, t]; return true },
-  prompt: () => globalThis.__promptResult,
-  localStorage: {
-    getItem: (k) => { if (k !== 'dsh-surf:basePath') throw new Error('bad key ' + k); return stored },
-    setItem: (k, v) => { if (k !== 'dsh-surf:basePath') throw new Error('bad key ' + k); stored = v }
-  }
-}
-globalThis.location = { origin: 'https://x.io' }
-globalThis.__promptResult = '/new'
-let opened = null
-await import('./lib/client.js')
-const spec = globalThis.__spec
-if (!spec || spec.id !== '@iasiv5/dsh-surf') throw new Error('no spec')
-const ReactStub = { createElement: (type, props, ...children) => ({ type, props, children }) }
-const mod = spec.factory((id) => id === 'react' ? ReactStub : {})
-if (mod.name !== 'dsh-surf/client') throw new Error('bad name')
-if (mod.inject.length !== 1 || mod.inject[0] !== 'slots') throw new Error('bad inject')
-const injected = [], registered = []
-const fakeCtx = { slots: { inject: (name, fn) => { injected.push(name); fn() }, register: (d, C) => registered.push([d, C]) } }
-mod.apply(fakeCtx)
-if (injected.length !== 1 || injected[0] !== 'shell.overlay') throw new Error('inject count')
-if (registered.length !== 1) throw new Error('register count')
-const [desc, Comp] = registered[0]
-if (desc.name !== 'shell.overlay' || desc.id !== 'dsh-surf:entry' || desc.order !== 130 || desc.label !== 'Surf 入口') throw new Error('descriptor')
-const root = Comp({})
-if (root.props.style.position !== 'fixed') throw new Error('container position')
-const btns = []
-const walk = (v) => { if (v && typeof v === 'object') { if (v.props && v.props['data-surf']) btns.push(v); (v.children || []).forEach((c) => typeof c === 'object' && c !== null && walk(c)) } }
-walk(root)
-if (btns.length !== 2) throw new Error('expect main+settings, got ' + btns.length)
-const main = btns.find((b) => b.props['data-surf'] === 'main')
-const settings = btns.find((b) => b.props['data-surf'] === 'settings')
-if (!main || !settings) throw new Error('missing role')
-if (main.props.style.pointerEvents !== 'auto') throw new Error('main pointerEvents')
-main.props.onClick()
-if (opened === null || opened[0] !== 'https://x.io/pre/surf/' || opened[1] !== '_blank' || opened[2] !== 'noopener') throw new Error('main open')
-opened = null; globalThis.__promptResult = null; settings.props.onClick()
-if (stored !== '/pre') throw new Error('prompt cancel must not write')
-globalThis.__promptResult = '/new'; settings.props.onClick()
-if (stored !== '/new') throw new Error('settings write-back')
-const cases = [['','https://x.io','https://x.io/surf/'],['/pre','https://x.io','https://x.io/pre/surf/'],['pre/','https://x.io','https://x.io/pre/surf/']]
-for (const [bp,o,want] of cases) if (mod.resolveSurfUrl(bp,o) !== want) throw new Error('resolveSurfUrl '+bp)
-for (const [bp,o,want] of cases) if (mod.resolveSurfUrl(bp,o) !== want) throw new Error('resolveSurfUrl '+bp)
-const savedLoc = globalThis.location; delete globalThis.location
-let threw = false; try { mod.openSurf('/pre') } catch (e) { threw = true }
-globalThis.location = savedLoc
-if (!threw) throw new Error('openSurf no-origin must throw')
-console.log('CLIENT-FACTORY-OK')
-EOF`
-- Expected: 失败（`lib/client.js` 不存在 → import 抛错，非零退出）
-- [ ] Step 2: 实现 `lib/client.js`
-- Change: 工厂实现（结构对齐 dsh-docs-panel 样板）：`resolveSurfUrl`/`openSurf(basePath, origin = globalThis.location?.origin)`（origin 空即 throw）；`apply(ctx)` 内 `ctx.slots.inject('shell.overlay', () => ctx.slots.register({name:'shell.overlay', id:'dsh-surf:entry', order:130, label:'Surf 入口'}, SurfButton))`；`SurfButton` = `createElement('div',{style:{position:'fixed',...}}, 主按钮, 设置按钮)`：主按钮 `createElement('button',{style:{pointerEvents:'auto'}, 'data-surf':'main', onClick:() => openSurf(window.localStorage.getItem('dsh-surf:basePath')||'')},'🌐 Surf')`；设置按钮 `createElement('button',{'data-surf':'settings', onClick:() => { const v = window.prompt('basePath', window.localStorage.getItem('dsh-surf:basePath')||''); if (v !== null) window.localStorage.setItem('dsh-surf:basePath', v) }},'⚙')`；结尾 `exports.name/exports.inject/exports.apply/exports.resolveSurfUrl/exports.openSurf` + `return module.exports`
-- [ ] Step 3: 复跑 Step 1 测试
-- Expected: `CLIENT-FACTORY-OK`
+- Run: `cd ~/workspace/dsh-surf && node test/client-settings.mjs`
+- Expected: 失败（`test/client-settings.mjs` 与 Settings 实现尚不存在，非零退出）
+- [ ] Step 2: 实现 `lib/client.js` 与宿主 Settings namespace
+- Change: 客户端工厂注册 id 等于 `@iasiv5/dsh-surf`；`apply(ctx)` 注入 `settings.plugin.item` generator，注册 `{name:'settings.plugin.item', id:'dsh-surf', key:'dsh-surf', order:130, label:'Surf'}` 与 Settings 卡片；卡片提供 basePath input（写入 `dsh-surf:basePath`）和「🌐 打开 Surf」按钮；不再注册 `shell.overlay`、不再渲染浮层/齿轮。宿主 `lib/index.js` 注册 `dsh-surf` settings namespace；保留 `resolveSurfUrl`/`openSurf` 与 `exports.name='dsh-surf/client'`。
+- [ ] Step 3: 复跑 Settings 回归测试
+- Run: `cd ~/workspace/dsh-surf && node test/client-settings.mjs`
+- Expected: `CLIENT-SETTINGS-OK`
 - [ ] Step 4: 依赖审查（命中即失败）+ 审计
 - Run: `cd ~/workspace/dsh-surf && if grep -rqnE "betterSidebar|ego-browser|ego_browser" lib/ package.json; then echo FORBIDDEN-DEP; exit 1; fi && ~/workspace/01_docs/audit-scripts/dsh-surf-secret-scan.sh .`
 - Expected: `SECRET-SCAN-CLEAN`（无 FORBIDDEN-DEP；2026-09-10 修订：原 `grep -qnE` 对目录参数 `lib/` 无 `-r` 时不递归且报错跳过，依赖审查实际未覆盖 lib/ 下文件，改用 `grep -rqnE` 全覆盖；修订经用户确认）
 - [ ] Step 5: checkpoint commit
-- Run: `cd ~/workspace/dsh-surf && git add -A && git commit -m "feat(client): shell.overlay thin launcher with basePath support"`
+- Run: `cd ~/workspace/dsh-surf && git add -A && git commit -m "feat(client): move Surf launcher into Settings"`
 
 ### Task 3: Surf 镜像源码（autostart 整文件保基座启动行 + 权限固定；2026-09-11 起不含 fcitx5）
 
