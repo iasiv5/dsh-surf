@@ -1,10 +1,11 @@
 # dsh-surf
 
-一个 DSH 薄插件 + 自托管流式浏览器面：在 DSH 界面里提供一枚「🌐 Surf」入口按钮，
+一个 DSH 薄插件 + 自托管流式浏览器面：在 DSH 设置里提供一级「网络冲浪」入口，
 一键打开由你自己的服务器托管的远程 Chrome 桌面（Selkies 视频流），中文输入经你本地
 设备的输入法直接注入远端。
 
-- **npm 插件包**：极薄的宿主/客户端双半身，只负责打开入口 URL，不代理任何流量；
+- **npm 插件包**：极薄插件，入口逻辑全部在客户端半身（宿主半身为最小空壳），只负责
+  打开入口 URL，不代理任何流量；
 - **`deploy/` 镜像源码**：基于固定 tag 的 `linuxserver/chrome` 基座，强制 X11 模式，
   整文件 autostart 保住基座 Chrome 启动行；不带容器内输入法（避免与本地 IME 注入冲突）。
 
@@ -12,9 +13,9 @@
 
 dsh-surf 的目标是「把一台远端浏览器桌面挂进 DSH 侧边一枚按钮」：
 
-- 插件半身（`lib/`）：在 shell overlay 注册两个按钮 —— 🌐 Surf 主按钮与 ⚙ 设置按钮
-  （设置 basePath）；点击主按钮经 `window.open(..., '_blank', 'noopener')` 打开
-  `<origin>[basePath]/surf/`；
+- 插件半身（`lib/`）：注册「设置 → 网络冲浪」一级入口（`settings.section` slot），
+  并把导航默认齿轮图标适配为浏览器窗口图标；点击导航项经
+  `window.open(..., '_blank', 'noopener')` 直接打开 `<origin>/surf/`（固定根路径）；
 - 镜像半身（`deploy/`）：Selkies + Chrome 的容器镜像，视频流直接在浏览器与
   容器之间建立，插件与容器之间没有代理层。
 
@@ -22,7 +23,7 @@ dsh-surf 的目标是「把一台远端浏览器桌面挂进 DSH 侧边一枚按
 
 ```
 浏览器 (DSH Web)
-   │  点击「🌐 Surf」(window.open, noopener)
+   │  点击「设置 → 网络冲浪」一级入口 (window.open, noopener)
    ▼
 反向代理 (TLS 终结 + 认证网关 + WebSocket 长连接, 见 deploy/reverse-proxy.md)
    │  /surf/*
@@ -76,8 +77,9 @@ docker compose up -d --build
 
 ## 6. 已知限制
 
-- **basePath 为手动适配**：客户端经 localStorage（键 `dsh-surf:basePath`）保存前缀，
-  默认根挂载；插件不会自动探测所处路径前缀；
+- **入口固定根路径**：插件只打开 `<origin>/surf/`，不提供 basePath 设置，也不会探测
+  所处路径前缀；`resolveSurfUrl()` 保留前缀拼接能力但无入口调用，若把面挂在子路径，
+  只能手动收藏完整 URL；
 - **无硬性视频码率帽**：上游未提供严格的视频码率上限变量，当前以帧率/CRF/分辨率
   单值锁定 + 音频码率限幅 + 云平台流量告警作为护栏；是否自建硬帽为开放决策；
 - **中文输入走本地设备 IME**：容器内**不装**输入法——容器内 IME 会与 Selkies 文本注入

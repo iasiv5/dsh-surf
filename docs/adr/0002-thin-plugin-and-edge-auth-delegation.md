@@ -15,3 +15,11 @@ dsh-surf 由两个生命周期完全不同的部分组成：**浏览栈**（Dock
 - 薄插件挂了或被卸载，浏览器依然可用（直接访问 URL）；反之容器挂了，DSH 一切如常。
 - v1 之后若做"DSH 页面内嵌 iframe 模式"（`allow="autoplay; fullscreen; clipboard-read; clipboard-write"`），只加 UI，不动这套边界。
 - 明确的非目标（no-s）：不做多人/多会话；不给 agent 开驾驶 Surf 浏览器的通路（未来若要，走 Selkies 生态的 Pelorus computer-use API，另立 ADR）。
+
+## 2026-09-11 更新（经用户批准）
+
+入口实现随 Settings 一级菜单重构变更：薄插件不再使用 `shell.overlay` 双按钮与 basePath
+设置，改为注册 `settings.section` 一级入口（「网络冲浪」，order 130），点击导航项直接
+`window.open` 根路径 `/surf/`；导航默认齿轮图标由客户端适配为浏览器窗口图标。本 ADR 的
+核心决策——薄插件只做入口、浏览栈与 DSH 生命周期解耦、认证完全委托边缘链——继续有效；
+正文中「`shell.overlay` slot」一行仅作决策当时的历史形态记录。

@@ -22,10 +22,13 @@ The surface upgrades to a WebSocket at `/surf/websocket`. Your proxy location mu
 
 ## Rule 3 — explicit request body limit
 
-Set a deliberate body limit (e.g. `client_max_body_size 25m;` on nginx). Uploads above
-the limit are rejected with **413 at the proxy layer** and never reach the container —
-pick the value consciously, and remember each proxy hop in the chain enforces its own
-limit (the smallest one wins).
+Set a deliberate body limit (e.g. `client_max_body_size 25m;` on nginx). Plain HTTP request
+bodies above the limit are rejected with **413 at the proxy layer** and never reach the
+container — pick the value consciously, and remember each proxy hop in the chain enforces its
+own limit (the smallest one wins). Note that Selkies file transfers do not pass through this
+gate: uploads ride the data WebSocket, and container-to-local downloads never traverse this
+chain at all (see README "Known limitations"). Treat this limit as defense-in-depth for the
+HTTP surface, not as your file-transfer size control.
 
 ## Rule 4 — sub-path mounts (`SUBFOLDER`)
 

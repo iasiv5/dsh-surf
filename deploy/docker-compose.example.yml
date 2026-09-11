@@ -10,7 +10,7 @@ services:
       - PGID=1000                  # <your gid>: instantiate with `id -g`
       - TZ=<Your-IANA-Timezone>    # e.g. Asia/Shanghai
       - LC_ALL=zh_CN.UTF-8
-      - PIXELFLUX_WAYLAND=false    # force X11 mode — required for fcitx5 (ADR-0003)
+      - PIXELFLUX_WAYLAND=false    # force X11 mode — Selkies text injection is stable on X11 (ADR-0003; in-container IME removed 2026-09-11)
       - SUBFOLDER=/surf/
       - TITLE=Surf
       - CHROME_CLI=--lang=zh-CN

@@ -10,9 +10,9 @@
 
 ## 架构快照
 
-- **npm 插件包 `@iasiv5/dsh-surf`**：宿主半身 `lib/index.js`（注册 `dsh-surf` Settings namespace）；客户端半身 `lib/client.js`（`window.__ModuleLoader__.load` 工厂，`inject:['slots']` 硬依赖，`settings.plugin.item` 卡片含 basePath 与「打开 Surf」按钮，主页面不再有浮层）。零 peerDependencies，不代理流量。
+- **npm 插件包 `@iasiv5/dsh-surf`**：宿主半身 `lib/index.js`（最小空壳：`name`/`inject`/空 `apply`）；客户端半身 `lib/client.js`（`window.__ModuleLoader__.load` 工厂，`inject:['slots']` 硬依赖，`settings.section` 一级入口 `{id:'dsh-surf', order:130, label:'网络冲浪'}`，点击导航项直接打开根 `/surf/`，无 basePath，主页面不再有浮层；2026-09-11 功能变更后形态）。零 peerDependencies，不代理流量。
 - **`deploy/` 镜像源码**：`Dockerfile` 基于固定 tag `lscr.io/linuxserver/chrome`；**强制 X11 模式**（`PIXELFLUX_WAYLAND=false`，见 ADR-0003，已获用户批准）；确定性整文件 autostart 仅保留基座 Chrome 启动行（`wrapped-chrome ${CHROME_CLI}`，已对固定 tag 官方文件核实），本地设备 IME 经 Selkies 文本注入，容器内不装 IME；compose 官方变量名参数化，安全布尔用 `|locked` 值语法强制关闭。
-- 前缀挂载入口：客户端 localStorage `basePath` 手动适配（默认根挂载）；已知限制写入 README。
+- 前缀挂载入口：已移除（2026-09-11）——入口固定根路径 `/surf/`，`resolveSurfUrl()` 保留前缀拼接能力但无入口调用；已知限制写入 README。
 - 流量护栏：帧率/CRF/分辨率单值锁定 + 云平台告警（官方无严格视频码率帽变量，硬帽为开放决策）。
 - 安全加固：`DISABLE_TERMINALS=true`、`DISABLE_SUDO=true`；分享/麦克风 `false|locked`；文件传输保留。
 
@@ -120,7 +120,7 @@
 ### Task 5: 根 README
 
 - 接口契约
-  - Produces: 章节：①定位 ②架构示意 ③插件安装 ④镜像部署 ⑤安全警告 ⑥已知限制（basePath；无码率硬帽；X11 取舍）⑦能力表述规范 ⑧许可证与 ADR 指引
+  - Produces: 章节：①定位 ②架构示意 ③插件安装 ④镜像部署 ⑤安全警告 ⑥已知限制（入口固定根路径，无 basePath；无码率硬帽；X11 取舍）⑦能力表述规范 ⑧许可证与 ADR 指引（2026-09-11 随 Settings 一级入口变更修订）
 - [ ] Step 1: 撰写 README
 - Change: 按契约写入（无占位）
 - [ ] Step 2: 章节检查
