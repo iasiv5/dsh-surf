@@ -47,7 +47,7 @@ dsh plugin --profile web add @iasiv5/dsh-surf
 dsh plugin --profile web add link:/path/to/dsh-surf
 ```
 
-安装后重启 DSH Web，在 **设置 → 插件 → Surf** 卡片中填写 basePath（若入口挂在
+安装后重启 DSH Web，在 **设置 → Surf** 一级菜单中填写 basePath（若入口挂在
 路径前缀下，如 `/app`），点击「🌐 打开 Surf」进入远端浏览器；根挂载无需设置。
 Surf 不再占用主页面浮层空间，适合手机等小屏幕设备。
 

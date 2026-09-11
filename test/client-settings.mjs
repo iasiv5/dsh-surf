@@ -45,12 +45,12 @@ const fakeCtx = {
   }
 }
 mod.apply(fakeCtx)
-if (injected.length !== 1 || injected[0] !== 'settings.plugin.item') throw new Error('settings slot')
+if (injected.length !== 1 || injected[0] !== 'settings.section') throw new Error('settings slot')
 if (registered.length !== 1) throw new Error('register count')
 const [descriptor, Card] = registered[0]
-if (descriptor.name !== 'settings.plugin.item' || descriptor.id !== 'dsh-surf' || descriptor.key !== 'dsh-surf' || descriptor.label !== 'Surf') throw new Error('settings descriptor')
+if (descriptor.name !== 'settings.section' || descriptor.id !== 'dsh-surf' || descriptor.order !== 130 || descriptor.label !== 'Surf') throw new Error('settings descriptor')
 const card = Card({})
-if (card.props['data-surf'] !== 'settings-card') throw new Error('card root')
+if (card.props['data-surf'] !== 'settings-section') throw new Error('section root')
 const findByRole = (node, role) => {
   if (!node || typeof node !== 'object') return null
   if (node.props?.['data-surf'] === role) return node
@@ -71,7 +71,5 @@ if (opened?.[0] !== 'https://x.io/new/surf/' || opened?.[1] !== '_blank' || open
 if (mod.resolveSurfUrl('', 'https://x.io') !== 'https://x.io/surf/') throw new Error('url resolver')
 
 const host = await import('../lib/index.js')
-let namespace = null
-host.apply({ inject: (_deps, fn) => fn({ settings: { register: (name) => { namespace = name } } }) })
-if (namespace !== 'dsh-surf') throw new Error('settings namespace')
+host.apply({})
 console.log('CLIENT-SETTINGS-OK')
