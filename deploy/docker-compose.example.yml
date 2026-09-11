@@ -3,7 +3,7 @@
 services:
   surf:
     container_name: dsh-surf
-    image: dsh-surf:0.1.0
+    image: dsh-surf:0.1.1
     build: .
     environment:
       - PUID=1000                  # <your uid>: instantiate with `id -u`
