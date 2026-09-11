@@ -66,14 +66,14 @@
 
 - 涉及文件：`lib/client.js`
 - 接口契约
-  - Produces: 模块 `{ name:'dsh-surf/client', inject:['slots'], apply, resolveSurfUrl, openSurf }`；**工厂注册 id 必须等于 package.json `name`**（dsh-client-modules 按包名作为 graph row id 校验注册 id，不一致即 "loaded without registering" 整包失败）；`apply(ctx)` 注入 `settings.section`，descriptor `{name:'settings.section', id:'dsh-surf', order:130, label:'Surf'}`，Settings 一级 Surf 页面包含 basePath 输入框与「打开 Surf」按钮；不再注入 `shell.overlay` 或 `settings.plugin.item`，不再渲染主页面浮层或齿轮按钮；`resolveSurfUrl(basePath, origin)` 斜杠归一；`openSurf(basePath, origin=globalThis.location?.origin)`——origin 为空时 **throw**；打开一律经 **`window.open(url,'_blank','noopener')`**；localStorage 键精确为 `dsh-surf:basePath`（2026-09-11 功能变更）
-- 验证范围：loader stub 全断言（注册 id 与 package name、settings.section descriptor、无 shell.overlay/settings.plugin.item、Settings 一级页面 input/basePath 持久化、打开行为、URL resolver、无 origin 抛错）。
+  - Produces: 模块 `{ name:'dsh-surf/client', inject:['slots'], apply, resolveSurfUrl, openSurf }`；**工厂注册 id 必须等于 package.json `name`**（dsh-client-modules 按包名作为 graph row id 校验注册 id，不一致即 "loaded without registering" 整包失败）；`apply(ctx)` 注入 `settings.section`，descriptor `{name:'settings.section', id:'dsh-surf', order:130, label:'网络冲浪'}`；一级菜单点击直接 `window.open(<origin>/surf/, '_blank', 'noopener')`，不再提供 basePath 设置、不再注入 `shell.overlay` 或 `settings.plugin.item`；通过客户端导航适配将默认齿轮替换为浏览器窗口 SVG 图标；设置页内容仅作 fallback 提示（2026-09-11 功能变更）
+- 验证范围：loader stub 全断言（注册 id 与 package name、settings.section descriptor、无 shell.overlay/settings.plugin.item、一级菜单 label/直接打开行为、浏览器图标适配、URL resolver、无 origin 抛错）。
 
 - [ ] Step 1: 写失败测试
 - Run: `cd ~/workspace/dsh-surf && node test/client-settings.mjs`
 - Expected: 失败（`test/client-settings.mjs` 与 Settings 实现尚不存在，非零退出）
 - [ ] Step 2: 实现 `lib/client.js` 与 Settings 一级菜单
-- Change: 客户端工厂注册 id 等于 `@iasiv5/dsh-surf`；`apply(ctx)` 注入 `settings.section`，注册 `{name:'settings.section', id:'dsh-surf', order:130, label:'Surf'}` 与一级 Settings 页面；页面提供 basePath input（写入 `dsh-surf:basePath`）和「🌐 打开 Surf」按钮；不再注册 `shell.overlay`/`settings.plugin.item`，不再渲染浮层/齿轮；宿主 `lib/index.js` 保持最小 apply；保留 `resolveSurfUrl`/`openSurf` 与 `exports.name='dsh-surf/client'`。
+- Change: 客户端工厂注册 id 等于 `@iasiv5/dsh-surf`；`apply(ctx)` 注入 `settings.section`，注册 `{name:'settings.section', id:'dsh-surf', order:130, label:'网络冲浪'}`；一级菜单捕获点击后直接打开根 `/surf/`，不再注册 `shell.overlay`/`settings.plugin.item`，不再提供 basePath 输入；客户端补浏览器窗口 SVG 图标适配，宿主 `lib/index.js` 保持最小 apply；保留 `resolveSurfUrl`/`openSurf` 与 `exports.name='dsh-surf/client'`。
 - [ ] Step 3: 复跑 Settings 回归测试
 - Run: `cd ~/workspace/dsh-surf && node test/client-settings.mjs`
 - Expected: `CLIENT-SETTINGS-OK`
@@ -81,7 +81,7 @@
 - Run: `cd ~/workspace/dsh-surf && if grep -rqnE "betterSidebar|ego-browser|ego_browser" lib/ package.json; then echo FORBIDDEN-DEP; exit 1; fi && ~/workspace/01_docs/audit-scripts/dsh-surf-secret-scan.sh .`
 - Expected: `SECRET-SCAN-CLEAN`（无 FORBIDDEN-DEP；2026-09-10 修订：原 `grep -qnE` 对目录参数 `lib/` 无 `-r` 时不递归且报错跳过，依赖审查实际未覆盖 lib/ 下文件，改用 `grep -rqnE` 全覆盖；修订经用户确认）
 - [ ] Step 5: checkpoint commit
-- Run: `cd ~/workspace/dsh-surf && git add -A && git commit -m "feat(client): move Surf launcher into Settings"`
+- Run: `cd ~/workspace/dsh-surf && git add -A && git commit -m "feat(client): make Network Surf a direct Settings launcher"`
 
 ### Task 3: Surf 镜像源码（autostart 整文件保基座启动行 + 权限固定；2026-09-11 起不含 fcitx5）
 

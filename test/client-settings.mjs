@@ -1,28 +1,15 @@
-let stored = '/pre'
 let opened = null
-let stateValue
 
 globalThis.window = {
   __ModuleLoader__: { load: (spec) => { globalThis.__spec = spec } },
   open: (url, target, features) => { opened = [url, target, features]; return true },
-  localStorage: {
-    getItem: (key) => key === 'dsh-surf:basePath' ? stored : null,
-    setItem: (key, value) => {
-      if (key !== 'dsh-surf:basePath') throw new Error('bad storage key ' + key)
-      stored = value
-    }
-  },
   location: { origin: 'https://x.io' }
 }
 globalThis.location = globalThis.window.location
 await import('../lib/client.js')
 
 const ReactStub = {
-  createElement: (type, props, ...children) => ({ type, props: props || {}, children }),
-  useState: (initial) => {
-    stateValue = typeof initial === 'function' ? initial() : initial
-    return [stateValue, (next) => { stateValue = typeof next === 'function' ? next(stateValue) : next }]
-  }
+  createElement: (type, props, ...children) => ({ type, props: props || {}, children })
 }
 const spec = globalThis.__spec
 if (!spec || spec.id !== '@iasiv5/dsh-surf') throw new Error('registration id')
@@ -47,28 +34,21 @@ const fakeCtx = {
 mod.apply(fakeCtx)
 if (injected.length !== 1 || injected[0] !== 'settings.section') throw new Error('settings slot')
 if (registered.length !== 1) throw new Error('register count')
-const [descriptor, Card] = registered[0]
-if (descriptor.name !== 'settings.section' || descriptor.id !== 'dsh-surf' || descriptor.order !== 130 || descriptor.label !== 'Surf') throw new Error('settings descriptor')
-const card = Card({})
-if (card.props['data-surf'] !== 'settings-section') throw new Error('section root')
-const findByRole = (node, role) => {
-  if (!node || typeof node !== 'object') return null
-  if (node.props?.['data-surf'] === role) return node
-  for (const child of node.children || []) {
-    const found = findByRole(child, role)
-    if (found) return found
-  }
-  return null
-}
-const input = findByRole(card, 'base-path')
-const button = findByRole(card, 'open')
-if (!input || !button) throw new Error('card controls')
-input.props.onChange({ target: { value: '/new' } })
-if (stored !== '/new') throw new Error('basePath persistence')
-const rerendered = Card({})
-findByRole(rerendered, 'open').props.onClick()
-if (opened?.[0] !== 'https://x.io/new/surf/' || opened?.[1] !== '_blank' || opened?.[2] !== 'noopener') throw new Error('open action')
-if (mod.resolveSurfUrl('', 'https://x.io') !== 'https://x.io/surf/') throw new Error('url resolver')
+const [descriptor, Section] = registered[0]
+if (descriptor.name !== 'settings.section' || descriptor.id !== 'dsh-surf' || descriptor.order !== 130 || descriptor.label !== '网络冲浪') throw new Error('settings descriptor')
+const section = Section({})
+if (section.props['data-surf'] !== 'settings-section') throw new Error('section root')
+const button = section.children.find((child) => child?.props?.['data-surf'] === 'open')
+if (!button) throw new Error('open button')
+button.props.onClick()
+if (opened?.[0] !== 'https://x.io/surf/' || opened?.[1] !== '_blank' || opened?.[2] !== 'noopener') throw new Error('open action')
+if (mod.resolveSurfUrl('/pre', 'https://x.io') !== 'https://x.io/pre/surf/') throw new Error('url resolver')
+const savedLocation = globalThis.location
+delete globalThis.location
+let threw = false
+try { mod.openSurf() } catch { threw = true }
+globalThis.location = savedLocation
+if (!threw) throw new Error('openSurf no-origin must throw')
 
 const host = await import('../lib/index.js')
 host.apply({})
