@@ -66,7 +66,7 @@
 
 - 涉及文件：`lib/client.js`
 - 接口契约
-  - Produces: 模块 `{ name:'dsh-surf/client', inject:['slots'], apply, resolveSurfUrl, openSurf }`；`resolveSurfUrl(basePath, origin)` 斜杠归一；`openSurf(basePath, origin=globalThis.location?.origin)`——origin 为空时 **throw**；打开一律经 **`window.open(url,'_blank','noopener')`**；localStorage 键精确为 `dsh-surf:basePath`；槽位 `{name:'shell.overlay', id:'dsh-surf:entry', order:130, label:'Surf 入口'}`；SurfButton vnode 树 = 定位容器（`style.position:'fixed'`）+ **两个按钮**：主按钮 `props['data-surf']='main'`（`style.pointerEvents:'auto'`，onClick → `openSurf(...)`）、设置按钮 `props['data-surf']='settings'`（onClick → `window.prompt`，非 null 才写回 localStorage 精确键）
+  - Produces: 模块 `{ name:'dsh-surf/client', inject:['slots'], apply, resolveSurfUrl, openSurf }`；**工厂注册 id 必须等于 package.json `name`**（dsh-client-modules 按包名作为 graph row id 校验注册 id，不一致即 "loaded without registering" 整包失败——2026-09-11 实测修订，经用户确认）；`resolveSurfUrl(basePath, origin)` 斜杠归一；`openSurf(basePath, origin=globalThis.location?.origin)`——origin 为空时 **throw**；打开一律经 **`window.open(url,'_blank','noopener')`**；localStorage 键精确为 `dsh-surf:basePath`；槽位 `{name:'shell.overlay', id:'dsh-surf:entry', order:130, label:'Surf 入口'}`；SurfButton vnode 树 = 定位容器（`style.position:'fixed'`）+ **两个按钮**：主按钮 `props['data-surf']='main'`（`style.pointerEvents:'auto'`，onClick → `openSurf(...)`）、设置按钮 `props['data-surf']='settings'`（onClick → `window.prompt`，非 null 才写回 localStorage 精确键）
 - 验证范围：loader stub 全断言（注入回调被执行且次数、descriptor 四字段、双按钮 vnode 树遍历、点击行为、prompt 取消不写入、无 origin 抛错）
 
 - [ ] Step 1: 写失败测试
@@ -86,7 +86,7 @@ globalThis.__promptResult = '/new'
 let opened = null
 await import('./lib/client.js')
 const spec = globalThis.__spec
-if (!spec || spec.id !== 'dsh-surf') throw new Error('no spec')
+if (!spec || spec.id !== '@iasiv5/dsh-surf') throw new Error('no spec')
 const ReactStub = { createElement: (type, props, ...children) => ({ type, props, children }) }
 const mod = spec.factory((id) => id === 'react' ? ReactStub : {})
 if (mod.name !== 'dsh-surf/client') throw new Error('bad name')
