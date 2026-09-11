@@ -1,5 +1,5 @@
 {
-  "name": "dsh-surf",
+  "name": "@iasiv5/dsh-surf",
   "version": "0.1.0",
   "description": "Surf launcher plugin for DeepSeek Harness: a thin shell.overlay entry that opens a self-hosted Selkies/Chrome streaming surface",
   "type": "module",
@@ -18,6 +18,9 @@
   ],
   "license": "MIT",
   "author": "iasiv5",
+  "publishConfig": {
+    "access": "public"
+  },
   "keywords": [
     "dsh",
     "plugin",

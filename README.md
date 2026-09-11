@@ -39,7 +39,7 @@ dsh-surf 容器 (Selkies-GStreamer 流服务, X11 模式)
 发布后可从 npm 安装：
 
 ```bash
-dsh plugin --profile web add dsh-surf
+dsh plugin --profile web add @iasiv5/dsh-surf
 ```
 
 从源码本地安装（开发模式）：
