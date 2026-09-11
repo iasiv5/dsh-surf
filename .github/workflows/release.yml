@@ -7,16 +7,10 @@
 # 发布时由 GitHub OIDC 短时授权，不需要 npm token/本机 OTP。
 name: Release
 
-on:
+"on":
   push:
     tags: ["v*"]
-  workflow_dispatch:
-    inputs:
-      ref:
-        description: "Git ref to publish (for the first release, use v0.1.0)"
-        required: false
-        default: "v0.1.0"
-        type: string
+  workflow_dispatch: {}
 
 permissions:
   contents: read
@@ -31,7 +25,7 @@ jobs:
       - name: Checkout release ref
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.ref || github.ref }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && 'v0.1.0' || github.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -44,7 +38,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ref='${{ inputs.ref || github.ref_name }}'
+          ref='${{ github.event_name == 'workflow_dispatch' && 'v0.1.0' || github.ref_name }}'
           case "$ref" in
             refs/tags/v*) version="${ref#refs/tags/v}" ;;
             v*) version="${ref#v}" ;;
