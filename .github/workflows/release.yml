@@ -1,0 +1,113 @@
+# npm Trusted Publishing 一次性配置：
+# npmjs.com → @iasiv5/dsh-surf → Settings → Trusted Publishing → Add publisher
+#   Organization/Owner: iasiv5
+#   Repository: dsh-surf
+#   Workflow filename: release.yml
+#   Environment: 留空
+# 发布时由 GitHub OIDC 短时授权，不需要 npm token/本机 OTP。
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref to publish (for the first release, use v0.1.0)"
+        required: false
+        default: "v0.1.0"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Checkout release ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          # Do not set registry-url: it can inject NODE_AUTH_TOKEN and shadow
+          # npm Trusted Publishing's OIDC exchange.
+
+      - name: Verify ref and package identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          ref='${{ inputs.ref || github.ref_name }}'
+          case "$ref" in
+            refs/tags/v*) version="${ref#refs/tags/v}" ;;
+            v*) version="${ref#v}" ;;
+            *) echo "::error::release ref must be a v* tag: $ref"; exit 1 ;;
+          esac
+          pkg_version=$(node -p "require('./package.json').version")
+          pkg_name=$(node -p "require('./package.json').name")
+          test "$pkg_name" = '@iasiv5/dsh-surf'
+          test "$pkg_version" = "$version"
+          echo "Publishing $pkg_name@$pkg_version from $ref"
+
+      - name: Run client regression test
+        run: node test/client-settings.mjs
+
+      - name: Run syntax checks
+        run: |
+          node --check lib/index.js
+          node --check lib/client.js
+
+      - name: Assert npm pack contents
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm pack --dry-run --json 2>/dev/null | node -e '
+          let s = ""
+          process.stdin.on("data", d => { s += d })
+          process.stdin.on("end", () => {
+            const j = JSON.parse(s)
+            const got = (j[0] || j).files.map(x => x.path).sort()
+            const want = [
+              "LICENSE", "README.md", "cordis.patch.yml",
+              "deploy/Dockerfile", "deploy/autostart",
+              "deploy/docker-compose.example.yml", "deploy/reverse-proxy.md",
+              "lib/client.js", "lib/index.js", "package.json"
+            ]
+            if (JSON.stringify(got) !== JSON.stringify(want)) {
+              console.error("PACK-MISMATCH", got)
+              process.exit(1)
+            }
+            console.log("PACK-EXACT")
+          })
+          '
+
+      - name: Pack the audited artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .artifacts
+          npm pack --pack-destination .artifacts
+          tarball=$(printf '%s\n' .artifacts/iasiv5-dsh-surf-*.tgz)
+          test -f "$tarball"
+          tar -xzOf "$tarball" package/package.json | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const p=JSON.parse(s);if(p.name!=='@iasiv5/dsh-surf'||p.version!=='0.1.0')process.exit(1);console.log('ARTIFACT-PKG-OK')})"
+
+      - name: Publish to npm via OIDC Trusted Publishing
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install -g npm@11
+          tarball=$(printf '%s\n' .artifacts/iasiv5-dsh-surf-*.tgz)
+          npm publish "$tarball" --provenance --access public
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: .artifacts/iasiv5-dsh-surf-*.tgz
+          generate_release_notes: true

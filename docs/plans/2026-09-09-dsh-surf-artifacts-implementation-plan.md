@@ -177,6 +177,16 @@
 - Run: `t=$(mktemp -d) && cd "$t" && npm pack @iasiv5/dsh-surf@0.1.0 --registry https://registry.npmjs.org >/dev/null 2>&1 && ~/workspace/01_docs/audit-scripts/dsh-surf-secret-scan.sh --tarball-only iasiv5-dsh-surf-0.1.0.tgz && npm view @iasiv5/dsh-surf@0.1.0 version --registry https://registry.npmjs.org && cd / && rm -rf "$t"`
 - Expected: registry tarball `SECRET-SCAN-CLEAN`；版本 `0.1.0`
 
+## 2026-09-11 发布通道变更（用户确认）
+
+T7 Step 4/5 的本机 `npm publish` 路径由 GitHub Actions OIDC Trusted Publishing 取代：
+
+- 工作流：`.github/workflows/release.yml`；push `v*` tag 或手动 dispatch 均支持；手动 dispatch 默认 ref=`v0.1.0`，用于本次已存在 tag 的发布。
+- 工作流权限：`id-token: write`；runner 使用 Node 24 + npm 11，执行客户端回归、pack allowlist、包名/版本校验后以 `npm publish --provenance --access public` 发布。
+- npm 一次性配置：在 `@iasiv5/dsh-surf` 的 Trusted Publishing 中绑定 owner=`iasiv5`、repository=`dsh-surf`、workflow=`release.yml`、environment 留空。
+- 本机 `publish-manifest-0.1.0.md` 保留为本地 preflight/审计留痕；实际发布 tarball 由 workflow 从绑定的 `v0.1.0` tag 现场构建，不再依赖本机 OTP。
+- 原 Step 5 的执行方式以本通道为准；push/tag/publish 三段独立确认仍然保留。
+
 ## 执行纪律
 
 - 开始实现前先复查计划；发现与实机/官方文档不符先停下修计划
