@@ -134,21 +134,21 @@ EOF`
 - [ ] Step 5: checkpoint commit
 - Run: `cd ~/workspace/dsh-surf && git add -A && git commit -m "feat(client): shell.overlay thin launcher with basePath support"`
 
-### Task 3: Surf 镜像源码（autostart 双职责整文件 + 权限固定）
+### Task 3: Surf 镜像源码（autostart 整文件保基座启动行 + 权限固定；2026-09-11 起不含 fcitx5）
 
 - 涉及文件：`deploy/Dockerfile`、`deploy/autostart`
 - 接口契约
   - Consumes: 基座固定 tag；基座官方 autostart 原文（`#!/bin/bash` + `wrapped-chrome ${CHROME_CLI}`，已核实）；基座 init 首启复制语义
-  - Produces: `deploy/autostart`（**精确四行整文件**：shebang、`# dsh-surf managed: fcitx5 IME + base chrome launch`、`fcitx5 -d &`、`wrapped-chrome ${CHROME_CLI}`——与基座唯一差异即新增输入法行）；Dockerfile（apt 装 fcitx5/fcitx5-chinese/fonts-noto-cjk + IME ENV + `COPY --chmod=0755 autostart /defaults/autostart` + 升级语义注释）
+  - Produces: `deploy/autostart`（**精确三行整文件**：shebang、`# dsh-surf managed: base chrome launch`、`wrapped-chrome ${CHROME_CLI}`——保留基座 Chrome 启动行；2026-09-10 修订为四行含 fcitx5，2026-09-11 实测 fcitx5 与本地 IME 注入冲突吃字、经用户确认移除，回退为三行）；Dockerfile（固定 tag `FROM` + 输入设计注释 + `COPY --chmod=0755 autostart /defaults/autostart` + 升级语义注释；无 apt IME 层，CJK 字体由基座自带）
 - 验证范围：精确内容断言（非子串）、权限、pin；构建与进程验证在部署计划 Task 2
 
 - [ ] Step 1: 撰写两个文件
-- Change: `deploy/autostart` 按契约写精确四行；`deploy/Dockerfile`：`ARG BASE_TAG=153.0.8010.36-1-ls121` → `FROM` → apt 层 → IME ENV → `COPY --chmod=0755 autostart /defaults/autostart` → 升级语义注释（/config 已有 autostart 的旧实例不自动更新，迁移见部署计划 Task 3 Step 1）
+- Change: `deploy/autostart` 按契约写精确三行；`deploy/Dockerfile`：`ARG BASE_TAG=153.0.8010.36-1-ls121` → `FROM` → 输入设计注释 → `COPY --chmod=0755 autostart /defaults/autostart` → 升级语义注释（/config 已有 autostart 的旧实例不自动更新，迁移见部署计划 Task 3 Step 1）
 - [ ] Step 2: 精确内容 + 权限 + pin 断言
-- Run: `cd ~/workspace/dsh-surf && printf '#!/bin/bash\n# dsh-surf managed: fcitx5 IME + base chrome launch\nfcitx5 -d &\nwrapped-chrome ${CHROME_CLI}\n' | diff - deploy/autostart && echo AUTOSTART-EXACT-OK && grep -q "COPY --chmod=0755 autostart" deploy/Dockerfile && if grep -rn "latest" deploy/; then exit 1; else echo PIN-OK; fi`
-- Expected: `AUTOSTART-EXACT-OK`（四行逐字一致）+ `PIN-OK`
+- Run: `cd ~/workspace/dsh-surf && printf '#!/bin/bash\n# dsh-surf managed: base chrome launch\nwrapped-chrome ${CHROME_CLI}\n' | diff - deploy/autostart && echo AUTOSTART-EXACT-OK && grep -q "COPY --chmod=0755 autostart" deploy/Dockerfile && if grep -rn "latest" deploy/; then exit 1; else echo PIN-OK; fi`
+- Expected: `AUTOSTART-EXACT-OK`（三行逐字一致）+ `PIN-OK`
 - [ ] Step 3: checkpoint commit
-- Run: `cd ~/workspace/dsh-surf && git add -A && git commit -m "feat(deploy): surf image (x11, fcitx5 autostart preserving base chrome launch)"`
+- Run: `cd ~/workspace/dsh-surf && git add -A && git commit -m "feat(deploy): surf image (x11, autostart preserving base chrome launch)"`
 
 ### Task 4: 部署示例与反代通则
 

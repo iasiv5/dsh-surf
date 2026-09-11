@@ -1,4 +1,3 @@
 #!/bin/bash
-# dsh-surf managed: fcitx5 IME + base chrome launch
-fcitx5 -d &
+# dsh-surf managed: base chrome launch
 wrapped-chrome ${CHROME_CLI}

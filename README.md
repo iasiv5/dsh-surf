@@ -1,12 +1,12 @@
 # dsh-surf
 
 一个 DSH 薄插件 + 自托管流式浏览器面：在 DSH 界面里提供一枚「🌐 Surf」入口按钮，
-一键打开由你自己的服务器托管的远程 Chrome 桌面（Selkies 视频流），开箱自带 fcitx5
-中文输入。
+一键打开由你自己的服务器托管的远程 Chrome 桌面（Selkies 视频流），中文输入经你本地
+设备的输入法直接注入远端。
 
 - **npm 插件包**：极薄的宿主/客户端双半身，只负责打开入口 URL，不代理任何流量；
 - **`deploy/` 镜像源码**：基于固定 tag 的 `linuxserver/chrome` 基座，强制 X11 模式，
-  整文件 autostart 同时保住基座 Chrome 启动行与 fcitx5 守护进程。
+  整文件 autostart 保住基座 Chrome 启动行；不带容器内输入法（避免与本地 IME 注入冲突）。
 
 ## 1. 定位
 
@@ -15,7 +15,7 @@ dsh-surf 的目标是「把一台远端浏览器桌面挂进 DSH 侧边一枚按
 - 插件半身（`lib/`）：在 shell overlay 注册两个按钮 —— 🌐 Surf 主按钮与 ⚙ 设置按钮
   （设置 basePath）；点击主按钮经 `window.open(..., '_blank', 'noopener')` 打开
   `<origin>[basePath]/surf/`；
-- 镜像半身（`deploy/`）：Selkies + Chrome + fcitx5 的容器镜像，视频流直接在浏览器与
+- 镜像半身（`deploy/`）：Selkies + Chrome 的容器镜像，视频流直接在浏览器与
   容器之间建立，插件与容器之间没有代理层。
 
 ## 2. 架构示意
@@ -28,8 +28,7 @@ dsh-surf 的目标是「把一台远端浏览器桌面挂进 DSH 侧边一枚按
    │  /surf/*
    ▼
 dsh-surf 容器 (Selkies-GStreamer 流服务, X11 模式)
-   ├── Chrome (wrapped-chrome, 基座启动行保留)
-   └── fcitx5 (中文输入, autostart 整文件确定性拉起)
+   └── Chrome (wrapped-chrome, 基座启动行保留)
    ▼
 互联网
 ```
@@ -80,8 +79,14 @@ docker compose up -d --build
   默认根挂载；插件不会自动探测所处路径前缀；
 - **无硬性视频码率帽**：上游未提供严格的视频码率上限变量，当前以帧率/CRF/分辨率
   单值锁定 + 音频码率限幅 + 云平台流量告警作为护栏；是否自建硬帽为开放决策；
-- **X11 取舍**：为换得 fcitx5 的确定性（ADR-0003），镜像强制 `PIXELFLUX_WAYLAND=false`，
-  放弃 Wayland 路径；
+- **中文输入走本地设备 IME**：容器内**不装**输入法——容器内 IME 会与 Selkies 文本注入
+  冲突（实测吃字）。你本地输入法打字经注入直达远端；若经原始键码模式接入，远端无
+  中文 IM，此为设计取舍；
+- **X11 取舍**：镜像强制 `PIXELFLUX_WAYLAND=false`，放弃 Wayland 路径（成熟稳定，
+  与文本注入管线兼容）；
+- **容器→本地下载经反代受限**：上游下载功能绑定容器内独立 HTTPS 端口，反代链（含
+  认证网关）不代理该端口；上传方向不受影响（走数据 WebSocket，且不受反代 body
+  limit 约束）；
 - 镜像升级**不会**自动更新持久卷里已存在的 autostart（首启复制语义），升级时需按
   迁移步骤核对 `.config/openbox/autostart` 哈希。
 
@@ -96,4 +101,4 @@ docker compose up -d --build
 - 设计决策记录见 [docs/adr/](docs/adr/)：
   - 0001 — 为何用 Selkies 容器而非复用 ego / WebRTC 直连
   - 0002 — 薄插件 + 边缘认证委托
-  - 0003 — 为 fcitx5 确定性强制 X11 模式
+  - 0003 — 强制 X11 模式（2026-09-11 起：X11 保留，容器内 fcitx5 已移除，理由见已知限制）
