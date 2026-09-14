@@ -1,7 +1,7 @@
 {
   "name": "@iasiv5/dsh-surf",
-  "version": "0.1.1",
-  "description": "Surf Settings launcher plugin for DeepSeek Harness: opens a self-hosted Selkies/Chrome streaming surface without occupying the main page",
+  "version": "0.1.2",
+  "description": "网络冲浪入口：设置一级菜单一键打开自托管 Selkies/Chrome 远程桌面，视频流直连；需自建容器并挂认证反代。",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
