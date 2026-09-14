@@ -94,7 +94,7 @@ jobs:
           npm pack --pack-destination .artifacts
           tarball=$(printf '%s\n' .artifacts/iasiv5-dsh-surf-*.tgz)
           test -f "$tarball"
-          tar -xzOf "$tarball" package/package.json | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const p=JSON.parse(s);if(p.name!=='@iasiv5/dsh-surf'||p.version!=='0.1.1')process.exit(1);console.log('ARTIFACT-PKG-OK')})"
+          tar -xzOf "$tarball" package/package.json | node -e "const fs=require('fs');let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const p=JSON.parse(s);const want=JSON.parse(fs.readFileSync('package.json','utf8')).version;if(p.name!=='@iasiv5/dsh-surf'||p.version!==want)process.exit(1);console.log('ARTIFACT-PKG-OK '+p.version)})"
 
       - name: Publish to npm via OIDC Trusted Publishing
         shell: bash
