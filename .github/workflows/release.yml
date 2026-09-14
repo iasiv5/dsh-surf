@@ -10,7 +10,12 @@ name: Release
 "on":
   push:
     tags: ["v*"]
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: '要发布的 v* tag；留空 = 最新 v* tag'
+        required: false
+        default: ''
   repository_dispatch:
     types: [release]
 
@@ -24,10 +29,32 @@ jobs:
       contents: write
       id-token: write
     steps:
+      - name: Resolve release ref
+        id: resolve
+        shell: bash
+        env:
+          DISPATCH_REF: ${{ inputs.ref }}
+          PAYLOAD_REF: ${{ github.event.client_payload.ref }}
+          PUSH_REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+          case "$GITHUB_EVENT_NAME" in
+            workflow_dispatch)
+              ref="$DISPATCH_REF"
+              if [ -z "$ref" ]; then
+                ref=$(git ls-remote --tags --refs https://github.com/iasiv5/dsh-surf.git 'v*' | awk -F/ '{print $NF}' | sort -V | tail -1)
+              fi
+              ;;
+            repository_dispatch) ref="$PAYLOAD_REF" ;;
+            *) ref="$PUSH_REF" ;;
+          esac
+          echo "RELEASE_REF=$ref"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+
       - name: Checkout release ref
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && 'v0.1.1' || github.event_name == 'repository_dispatch' && github.event.client_payload.ref || github.ref }}
+          ref: ${{ steps.resolve.outputs.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -38,9 +65,11 @@ jobs:
 
       - name: Verify ref and package identity
         shell: bash
+        env:
+          RELEASE_REF: ${{ steps.resolve.outputs.ref }}
         run: |
           set -euo pipefail
-          ref='${{ github.event_name == 'workflow_dispatch' && 'v0.1.1' || github.event_name == 'repository_dispatch' && github.event.client_payload.ref || github.ref_name }}'
+          ref="$RELEASE_REF"
           case "$ref" in
             refs/tags/v*) version="${ref#refs/tags/v}" ;;
             v*) version="${ref#v}" ;;
