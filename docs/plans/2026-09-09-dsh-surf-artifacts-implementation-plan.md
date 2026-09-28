@@ -1,5 +1,7 @@
 # dsh-surf 开源制品实施计划
 
+> 📌 归档批注（2026-09-28）：本计划已交付完毕——0.1.0 计划产物演进至 0.1.3 现版，npm + GitHub 双发布，本机部署与验收走姊妹计划及 know-how 007。checkbox 保留原样作为过程记录，实际完成度以仓库现状与各版本发布说明为准；正文 T1 残留的「apply(ctx) 注册 dsh-surf settings namespace」为成文时的旧形态，已被 2026-09-11 功能变更（`settings.section` 一级入口 slot，见下方「架构快照」）取代，仅存历史价值。
+
 ## 目标
 
 - 建成可开源到 GitHub 的 `dsh-surf` 仓库：npm 插件包（薄插件）、Surf 镜像源码（Dockerfile + autostart）、部署示例与文档
