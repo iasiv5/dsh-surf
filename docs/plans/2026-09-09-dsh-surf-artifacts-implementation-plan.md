@@ -28,7 +28,7 @@
 
 ## 输入工件
 
-- `docs/adr/0001`、`0002`、`0003`（X11，已批准）、`CONTEXT.md`
+- `docs/adr/0001`、`0002`、`0003`（X11，已批准）、`GLOSSARY.md`
 - 私有脚本：`~/workspace/01_docs/audit-scripts/dsh-surf-secret-scan.sh`（审计）、`~/workspace/01_docs/audit-scripts/dsh-surf-acceptance-check.sh`（验收块解析器，`--evidence-dir` 全语义复验）、`~/workspace/01_docs/audit-scripts/dsh-surf-acceptance-generate.sh`（验收记录唯一生成途径）、`~/workspace/01_docs/audit-scripts/dsh-surf-publish-manifest-check.sh`（publish manifest 严格门）
 - 实机插件样板（只读；路径由执行者在 DSH 插件安装目录定位）：dsh-docs-panel 包（package.json `dsh` 字段、cordis.patch.yml、宿主 ESM、client 工厂形态）、dsh-flowglass 包的 `lib/client.js`（`slots.inject('shell.overlay', ...)`）
 - 官方文档（已核实）：docker-chrome 页、Selkies configuration reference（单值锁定与 `|locked` 值语法）、reverse-proxy 四规则、`https://raw.githubusercontent.com/linuxserver/docker-chrome/153.0.8010.36-1-ls121/root/defaults/autostart`（基座 Chrome 启动行原文）、baseimage `init-selkies-config/run`（autostart 首启复制语义）
