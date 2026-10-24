@@ -1,0 +1,21 @@
+<svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="dsh-surf">
+  <!-- dsh-surf 网络冲浪：斜向冲浪板（蓝）掠过双浪线（青），
+       板尾两滴溅沫 = Selkies/Chrome 远程桌面视频流直连 -->
+  <ellipse cx="17.5" cy="12.5" rx="10" ry="3.4" fill="url(#b)" transform="rotate(-38 17.5 12.5)"/>
+  <circle cx="27.8" cy="10.8" r="1.5" fill="url(#t)" opacity="0.85"/>
+  <circle cx="30.5" cy="14.2" r="1.1" fill="url(#t)" opacity="0.55"/>
+  <path d="M4.5 24.5C9 20.5 13 28.5 18 24.5C23 20.5 27 28.5 31.5 24.5"
+        stroke="url(#t)" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M7 30.5C10.5 27.5 13.5 33 18 30.5C22.5 28 25.5 33 29 30.5"
+        stroke="url(#t)" stroke-width="2.4" stroke-linecap="round" fill="none" opacity="0.45"/>
+  <defs>
+    <linearGradient id="b" x1="8" y1="7" x2="27" y2="19" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#69B9FF"/>
+      <stop offset="1" stop-color="#324DE2"/>
+    </linearGradient>
+    <linearGradient id="t" x1="4.5" y1="27" x2="31.5" y2="27" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#45E7A4"/>
+      <stop offset="1" stop-color="#05909D"/>
+    </linearGradient>
+  </defs>
+</svg>

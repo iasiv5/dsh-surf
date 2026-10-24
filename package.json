@@ -2,6 +2,7 @@
   "name": "@iasiv5/dsh-surf",
   "version": "0.1.4",
   "description": "网络冲浪入口：设置一级菜单一键打开自托管 Selkies/Chrome 远程桌面，视频流直连；需自建容器并挂认证反代。",
+  "icon": "./icon.svg",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
@@ -14,7 +15,8 @@
     "cordis.patch.yml",
     "README.md",
     "LICENSE",
-    "deploy/"
+    "deploy/",
+    "icon.svg"
   ],
   "license": "MIT",
   "author": "iasiv5",
