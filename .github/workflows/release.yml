@@ -92,28 +92,7 @@ jobs:
           node --check lib/client.js
 
       - name: Assert npm pack contents
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm pack --dry-run --json 2>/dev/null | node -e '
-          let s = ""
-          process.stdin.on("data", d => { s += d })
-          process.stdin.on("end", () => {
-            const j = JSON.parse(s)
-            const got = (j[0] || j).files.map(x => x.path).sort()
-            const want = [
-              "LICENSE", "README.md", "cordis.patch.yml",
-              "deploy/Dockerfile", "deploy/autostart",
-              "deploy/docker-compose.example.yml", "deploy/reverse-proxy.md",
-              "icon.svg", "lib/client.js", "lib/index.js", "package.json"
-            ]
-            if (JSON.stringify(got) !== JSON.stringify(want)) {
-              console.error("PACK-MISMATCH", got)
-              process.exit(1)
-            }
-            console.log("PACK-EXACT")
-          })
-          '
+        run: node scripts/check-pack.mjs
 
       - name: Pack the audited artifact
         shell: bash

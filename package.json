@@ -18,6 +18,9 @@
     "deploy/",
     "icon.svg"
   ],
+  "scripts": {
+    "check:pack": "node scripts/check-pack.mjs"
+  },
   "license": "MIT",
   "author": "iasiv5",
   "repository": {
