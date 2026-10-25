@@ -105,7 +105,7 @@ jobs:
               "LICENSE", "README.md", "cordis.patch.yml",
               "deploy/Dockerfile", "deploy/autostart",
               "deploy/docker-compose.example.yml", "deploy/reverse-proxy.md",
-              "lib/client.js", "lib/index.js", "package.json"
+              "icon.svg", "lib/client.js", "lib/index.js", "package.json"
             ]
             if (JSON.stringify(got) !== JSON.stringify(want)) {
               console.error("PACK-MISMATCH", got)
