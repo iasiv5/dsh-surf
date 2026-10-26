@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Web Surfing (@iasiv5/dsh-surf)",
+    "description": "Opens a self-hosted streaming desktop in the browser; requires a self-hosted Selkies container."
+  }
+}

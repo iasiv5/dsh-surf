@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "网络冲浪（@iasiv5/dsh-surf）",
+    "description": "一键打开自托管流式远程桌面，视频流直连浏览器；需自建 Selkies 容器。"
+  }
+}

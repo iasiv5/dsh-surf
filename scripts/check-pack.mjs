@@ -16,6 +16,8 @@ const WANT = [
   "icon.svg",
   "lib/client.js",
   "lib/index.js",
+  "locale/en.json",
+  "locale/zh.json",
   "package.json",
 ].sort();
 
