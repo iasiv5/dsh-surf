@@ -1,4 +1,5 @@
 # dsh-surf
+![DSH](https://img.shields.io/badge/DSH-0.2.2--rc.5%20verified-2563eb)
 
 一个 DSH 薄插件 + 自托管流式浏览器面：在 DSH 设置里提供一级「网络冲浪」入口，
 一键打开由你自己的服务器托管的远程 Chrome 桌面（Selkies 视频流），中文输入经你本地
