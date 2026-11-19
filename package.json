@@ -1,6 +1,6 @@
 {
   "name": "@iasiv5/dsh-surf",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "网络冲浪入口：设置一级菜单一键打开 Selkies/Chrome 远程桌面，视频流直连；需自建容器与认证反代。版本无关，详见仓库。",
   "icon": "./icon.svg",
   "type": "module",
