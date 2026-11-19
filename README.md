@@ -1,5 +1,5 @@
 # dsh-surf
-![DSH](https://img.shields.io/badge/DSH-0.2.2--rc.5%20verified-2563eb)
+[![CI](https://img.shields.io/github/actions/workflow/status/iasiv5/dsh-surf/ci.yml?branch=main&label=CI)](https://github.com/iasiv5/dsh-surf/actions/workflows/ci.yml) [![npm](https://img.shields.io/npm/v/@iasiv5/dsh-surf?label=npm)](https://www.npmjs.com/package/@iasiv5/dsh-surf) [![License](https://img.shields.io/github/license/iasiv5/dsh-surf?label=License)](./LICENSE) ![DSH](https://img.shields.io/badge/DSH-0.2.2--rc.5%20verified-2563eb)
 
 一个 DSH 薄插件 + 自托管流式浏览器面：在 DSH 设置里提供一级「网络冲浪」入口，
 一键打开由你自己的服务器托管的远程 Chrome 桌面（Selkies 视频流），中文输入经你本地
